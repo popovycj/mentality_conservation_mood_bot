@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  name: MyString
+  release_date: 2023-11-16
+  image_url: MyString
+  spotify_url: MyString
+  genres: MyString
+
+two:
+  name: MyString
+  release_date: 2023-11-16
+  image_url: MyString
+  spotify_url: MyString
+  genres: MyString
