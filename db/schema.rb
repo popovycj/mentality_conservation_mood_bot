@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2023_11_23_234125) do
+ActiveRecord::Schema[7.1].define(version: 2023_11_24_141206) do
   create_table "active_admin_comments", force: :cascade do |t|
     t.string "namespace"
     t.text "body"
@@ -66,6 +66,7 @@ ActiveRecord::Schema[7.1].define(version: 2023_11_23_234125) do
     t.text "previous_mood_scores"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "recommended_track_ids"
   end
 
   add_foreign_key "albums", "artists"

@@ -38,6 +38,8 @@ module TelegramBot
       case message.text
       when '/start'
         handle_start(message, state)
+      when '/new'
+        FindNearestTrackWorker.perform_async(user_id)
       else
         handle_response(message, state)
       end

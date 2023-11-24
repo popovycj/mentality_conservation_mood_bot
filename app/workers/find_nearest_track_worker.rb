@@ -7,24 +7,28 @@ class FindNearestTrackWorker
     user = User.find_by(telegram_user_id: telegram_user_id)
 
     scores = user.previous_mood_scores
-    nearest_track_id = find_nearest_track_id(scores)
+    nearest_track_id = find_nearest_track_id(scores, user.recommended_track_ids)
 
     nearest_track = Track.find(nearest_track_id)
     send_track_recommendation(telegram_user_id, nearest_track)
+
+    user.recommended_track_ids << nearest_track_id
+    user.save!
   end
 
   private
 
-  def find_nearest_track_id(scores)
-    classifier = Knn::Classifier.new(track_vectors, 3, Knn::SquaredEuclideanCalculator)
+  def find_nearest_track_id(scores, excluded_track_ids)
+    vectors = find_track_vectors(excluded_track_ids)
+    classifier = Knn::Classifier.new(vectors, 1, Knn::SquaredEuclideanCalculator)
     classifier.classify([nil] + scores)
   end
 
-  def track_vectors
+  def find_track_vectors(excluded_track_ids)
     return @vectors if @vectors.present?
 
     @vectors = []
-    Track.find_each do |track|
+    Track.where.not(id: excluded_track_ids).find_each do |track|
       @vectors << [track.id] + track.lyrics_vector
     end
     @vectors
