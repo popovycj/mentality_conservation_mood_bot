@@ -4,15 +4,35 @@ class FindNearestTrackWorker
   include Sidekiq::Worker
 
   def perform(telegram_user_id)
-    scores = User.find_by(telegram_user_id: telegram_user_id).previous_mood_scores
+    user = User.find_by(telegram_user_id: telegram_user_id)
 
-    vectors = Track.all.map { |t| [t.id] + t.lyrics_vector }
-    classifier = Knn::Classifier.new(vectors, 3, Knn::SquaredEuclideanCalculator)
+    scores = user.previous_mood_scores
+    nearest_track_id = find_nearest_track_id(scores)
 
-    nearest_track_id = classifier.classify([nil] + scores)
     nearest_track = Track.find(nearest_track_id)
+    send_track_recommendation(telegram_user_id, nearest_track)
+  end
 
+  private
+
+  def find_nearest_track_id(scores)
+    classifier = Knn::Classifier.new(track_vectors, 3, Knn::SquaredEuclideanCalculator)
+    classifier.classify([nil] + scores)
+  end
+
+  def track_vectors
+    return @vectors if @vectors.present?
+
+    @vectors = []
+    Track.find_each do |track|
+      @vectors << [track.id] + track.lyrics_vector
+    end
+    @vectors
+  end
+
+  def send_track_recommendation(telegram_user_id, track)
     bot = Telegram::Bot::Client.new(Rails.application.credentials.telegram[:token])
-    bot.api.send_message(chat_id: telegram_user_id, text: "The nearest track to your mood is: #{nearest_track.name}\nLink: #{nearest_track.spotify_url}")
+    message = "The nearest track to your mood is: #{track.name}\nLink: #{track.spotify_url}"
+    bot.api.send_message(chat_id: telegram_user_id, text: message)
   end
 end
