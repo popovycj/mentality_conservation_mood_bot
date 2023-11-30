@@ -56,7 +56,7 @@ module TelegramHandlers
 
       next_handler.handle_response if next_handler
 
-      @bot.api.send_message(chat_id: @user_id, text: "Answers: #{answers.join(', ')}\nHandler: #{self.class.name}")
+      process_answers(answers)
     end
 
     def valid_answer?(answer)
@@ -70,6 +70,12 @@ module TelegramHandlers
         resize_keyboard: true,
         one_time_keyboard: true
       )
+    end
+
+    protected
+
+    def process_answers(answers)
+      raise NotImplementedError, "This method must be implemented by subclasses"
     end
 
     private

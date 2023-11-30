@@ -32,8 +32,15 @@ module TelegramHandlers
     def initialize(bot, user_id)
       super(bot, user_id, QUESTIONS, ANSWER_SCORES, STATE_EXPIRATION)
     end
-  end
 
-  puts "Registering MoodAssessmentHandler..."
-  TelegramHandlers::HandlerFactory.register_handler('MoodAssessmentHandler', MoodAssessmentHandler)
+    protected
+
+    def process_answers(answers)
+      scores = MoodAssignmentService.new(answers).calculate_scores
+      @bot.api.send_message(chat_id: @user_id, text: "Answers: #{answers.join(', ')}\nProcessed answers: #{scores}")
+    end
+
+    puts "Registering #{self.name.demodulize}..."
+    TelegramHandlers::HandlerFactory.register_handler(self.name.demodulize, self)
+  end
 end
